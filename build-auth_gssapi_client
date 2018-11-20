@@ -1,0 +1,104 @@
+#!/usr/bin/env sh
+
+set -o errexit
+set -o nounset
+
+unset `env | grep -vi '^EDITOR=\|^HOME=\|^LANG=\|MXE\|^PATH=' | grep -vi 'PKG_CONFIG\|PROXY\|^PS1=\|^TERM=' | cut -d '=' -f1 | tr '\n' ' '`
+
+MARIADB_CONNECTOR_C_VERSION='3.0.7'
+
+MDCC_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MDCC_MXE=$MDCC_HOME/mxe
+MDCC_DOWNLOADS=$MDCC_HOME/downloads
+MDCC_SOURCE=$MDCC_HOME/source
+MDCC_PATCHES=$MDCC_HOME/patches
+MDCC_BUILD=$MDCC_HOME/build
+MDCC_OUT=$MDCC_HOME/out
+
+if test ! -d "$MDCC_MXE/usr/bin"; then
+    printf "### Installing required libraries\n"
+    sudo apt update
+    sudo apt install -y \
+        autoconf \
+        automake \
+        autopoint \
+        bash \
+        bison \
+        bzip2 \
+        flex \
+        g++ \
+        g++-multilib \
+        gettext \
+        git \
+        gperf \
+        intltool \
+        libc6-dev-i386 \
+        libgdk-pixbuf2.0-dev \
+        libltdl-dev \
+        libssl-dev \
+        libtool-bin \
+        libxml-parser-perl \
+        make \
+        openssl \
+        p7zip-full \
+        patch \
+        perl \
+        pkg-config \
+        python \
+        ruby \
+        scons \
+        sed \
+        unzip \
+        wget \
+        xz-utils
+    rm -rf "$MDCC_MXE"
+    mkdir -p "$MDCC_MXE"
+    printf "### Downloading MXE\n"
+    git clone https://github.com/mxe/mxe.git "$MDCC_MXE"
+    printf "### Building MXE (IT MAY TAKE LOOOOOONG TIME)\n"
+    cd "$MDCC_MXE"
+    make MXE_TARGETS='i686-w64-mingw32.static x86_64-w64-mingw32.static' cc cmake curl
+fi
+export PATH="$MDCC_MXE/usr/bin:$PATH"
+
+if test ! -d "$MDCC_DOWNLOADS"; then
+    mkdir -p "$MDCC_DOWNLOADS"
+fi
+
+if test ! -f "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz"; then
+    printf "### Downloading source code\n"
+    curl --location --output "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz" --retry 3 --silent --show-error "https://github.com/MariaDB/mariadb-connector-c/archive/v${MARIADB_CONNECTOR_C_VERSION}.tar.gz"
+fi
+
+# Arguments:
+#   $1: architecture (i686 or x86_64)
+mccBuild() {
+    printf "### Extracting source code\n"
+    rm -rf "$MDCC_SOURCE"
+    cd "$(dirname "$MDCC_SOURCE")"
+    tar -xzf "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz"
+    mv "mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}" "$MDCC_SOURCE"
+    printf "### Patching source code\n"
+    cd "$MDCC_SOURCE"
+    MDCC_PATCH_PATTERN="$MDCC_PATCHES/*.patch"
+    for MDCC_PATCHFILE in $MDCC_PATCH_PATTERN; do
+        patch --strip=1 --input="$MDCC_PATCHFILE"
+    done
+    rm -rf "$MDCC_BUILD"
+    mkdir -p "$MDCC_BUILD"
+    cd "$MDCC_BUILD"
+    $1-w64-mingw32.static-cmake -DCMAKE_TOOLCHAIN_FILE="$MDCC_MXE/usr/$1-w64-mingw32.static/share/cmake/mxe-conf.cmake" "$MDCC_SOURCE"
+    printf "### Bulding for $1\n"
+    # Compilation breaks at some points, but auth_gssapi_client.dll is built prior to the failure
+    make -Wdiscarded-qualifiers -Wsign-compare -Wunused-parameter 2>/dev/null 1>/dev/null || true
+
+    mkdir -p "$MDCC_OUT/$1"
+    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$1/auth_gssapi_client.dll"
+    if test ! -f "$MDCC_OUT/LICENSE"; then
+        cp "$MDCC_SOURCE/COPYING.LIB" "$MDCC_OUT/LICENSE"
+    fi
+    rm -rf "$MDCC_SOURCE"
+    rm -rf "$MDCC_BUILD"
+}
+mccBuild 'i686'
+mccBuild 'x86_64'

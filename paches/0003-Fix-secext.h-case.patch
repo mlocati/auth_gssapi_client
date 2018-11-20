@@ -1,0 +1,35 @@
+From: Michele Locati <michele@locati.it>
+Date: Tue, 20 Nov 2018 14:29:13 +0100
+Subject: [PATCH] Fix secext.h case
+
+---
+ plugins/auth/sspi_client.c | 2 +-
+ plugins/auth/sspi_common.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/plugins/auth/sspi_client.c b/plugins/auth/sspi_client.c
+--- a/plugins/auth/sspi_client.c
++++ b/plugins/auth/sspi_client.c
+@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
+ #define SECURITY_WIN32
+ #include <windows.h>
+ #include <sspi.h>
+-#include <SecExt.h>
++#include <secext.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/plugins/auth/sspi_common.h b/plugins/auth/sspi_common.h
+--- a/plugins/auth/sspi_common.h
++++ b/plugins/auth/sspi_common.h
+@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
+ #define SECURITY_WIN32
+ #include <windows.h>
+ #include <sspi.h>
+-#include <SecExt.h>
++#include <secext.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ 
+-- 
+2.19.1.windows.1

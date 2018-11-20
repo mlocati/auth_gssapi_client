@@ -1,0 +1,22 @@
+From: Michele Locati <michele@locati.it>
+Date: Tue, 20 Nov 2018 14:12:30 +0100
+Subject: [PATCH] Create PDB only with MSVC
+
+---
+ libmariadb/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libmariadb/CMakeLists.txt b/libmariadb/CMakeLists.txt
+--- a/libmariadb/CMakeLists.txt
++++ b/libmariadb/CMakeLists.txt
+@@ -448,7 +448,7 @@ INSTALL(TARGETS libmariadb
+         DESTINATION ${INSTALL_LIBDIR})
+ 
+ 
+-IF(WIN32)
++IF(WIN32 AND MSVC)
+    # On Windows, install PDB
+    INSTALL(FILES $<TARGET_PDB_FILE:libmariadb> DESTINATION "${INSTALL_LIBDIR}"
+            COMPONENT Development)
+-- 
+2.19.1.windows.1

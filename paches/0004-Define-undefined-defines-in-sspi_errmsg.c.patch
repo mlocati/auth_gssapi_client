@@ -1,0 +1,45 @@
+From: Michele Locati <michele@locati.it>
+Date: Tue, 20 Nov 2018 15:34:44 +0100
+Subject: [PATCH] Define undefined defines in sspi_errmsg.c
+
+---
+ plugins/auth/sspi_errmsg.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/plugins/auth/sspi_errmsg.c b/plugins/auth/sspi_errmsg.c
+--- a/plugins/auth/sspi_errmsg.c
++++ b/plugins/auth/sspi_errmsg.c
+@@ -30,6 +30,31 @@ POSSIBILITY OF SUCH DAMAGE.
+ #include <stdio.h>
+ 
+ #define ERRSYM(x) {x, #x}
++
++#ifndef SEC_E_INVALID_PARAMETER
++#define SEC_E_INVALID_PARAMETER _HRESULT_TYPEDEF_(0x8009035D)
++#endif
++
++#ifndef SEC_E_DELEGATION_POLICY
++#define SEC_E_DELEGATION_POLICY _HRESULT_TYPEDEF_(0x8009035E)
++#endif
++
++#ifndef SEC_E_POLICY_NLTM_ONLY
++#define SEC_E_POLICY_NLTM_ONLY _HRESULT_TYPEDEF_(0x8009035F)
++#endif
++
++#ifndef SEC_E_NO_CONTEXT
++#define SEC_E_NO_CONTEXT _HRESULT_TYPEDEF_(0x80090361)
++#endif
++
++#ifndef SEC_E_PKU2U_CERT_FAILURE
++#define SEC_E_PKU2U_CERT_FAILURE _HRESULT_TYPEDEF_(0x80090362)
++#endif
++
++#ifndef SEC_E_MUTUAL_AUTH_FAILED
++#define SEC_E_MUTUAL_AUTH_FAILED _HRESULT_TYPEDEF_(0x80090363)
++#endif
++
+ static struct {
+   int error;
+   const char *sym;
+-- 
+2.19.1.windows.1
