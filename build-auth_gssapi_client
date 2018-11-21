@@ -5,7 +5,8 @@ set -o nounset
 
 unset `env | grep -vi '^EDITOR=\|^HOME=\|^LANG=\|MXE\|^PATH=' | grep -vi 'PKG_CONFIG\|PROXY\|^PS1=\|^TERM=' | cut -d '=' -f1 | tr '\n' ' '`
 
-MARIADB_CONNECTOR_C_VERSION='3.0.7'
+#MARIADB_CONNECTOR_C_VERSION='3.0.7'
+MARIADB_CONNECTOR_C_VERSION='master'
 
 MDCC_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 MDCC_MXE=$MDCC_HOME/mxe
@@ -13,7 +14,7 @@ MDCC_DOWNLOADS=$MDCC_HOME/downloads
 MDCC_SOURCE=$MDCC_HOME/source
 MDCC_PATCHES=$MDCC_HOME/patches
 MDCC_BUILD=$MDCC_HOME/build
-MDCC_OUT=$MDCC_HOME/out
+MDCC_OUT=$MDCC_HOME/binaries
 
 if test ! -d "$MDCC_MXE/usr/bin"; then
     printf "### Installing required libraries\n"
@@ -67,7 +68,15 @@ fi
 
 if test ! -f "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz"; then
     printf "### Downloading source code\n"
-    curl --location --output "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz" --retry 3 --silent --show-error "https://github.com/MariaDB/mariadb-connector-c/archive/v${MARIADB_CONNECTOR_C_VERSION}.tar.gz"
+    case "$MARIADB_CONNECTOR_C_VERSION" in
+        'master')
+            MDCC_SOURCE_URL='https://github.com/MariaDB/mariadb-connector-c/archive/master.tar.gz'
+            ;;
+        *)
+            MDCC_SOURCE_URL="https://github.com/MariaDB/mariadb-connector-c/archive/v${MARIADB_CONNECTOR_C_VERSION}.tar.gz"
+            ;;
+    esac
+    curl --location --output "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz" --retry 3 --silent --show-error "$MDCC_SOURCE_URL"
 fi
 
 # Arguments:
@@ -82,18 +91,20 @@ mccBuild() {
     cd "$MDCC_SOURCE"
     MDCC_PATCH_PATTERN="$MDCC_PATCHES/*.patch"
     for MDCC_PATCHFILE in $MDCC_PATCH_PATTERN; do
+        printf "> %s\n" "$MDCC_PATCHFILE"
         patch --strip=1 --input="$MDCC_PATCHFILE"
     done
     rm -rf "$MDCC_BUILD"
     mkdir -p "$MDCC_BUILD"
     cd "$MDCC_BUILD"
     $1-w64-mingw32.static-cmake -DCMAKE_TOOLCHAIN_FILE="$MDCC_MXE/usr/$1-w64-mingw32.static/share/cmake/mxe-conf.cmake" "$MDCC_SOURCE"
-    printf "### Bulding for $1\n"
-    # Compilation breaks at some points, but auth_gssapi_client.dll is built prior to the failure
-    make -Wdiscarded-qualifiers -Wsign-compare -Wunused-parameter 2>/dev/null 1>/dev/null || true
+    printf "### Building for $1\n"
+    make auth_gssapi_client
+    make caching_sha2_password
 
     mkdir -p "$MDCC_OUT/$1"
     $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$1/auth_gssapi_client.dll"
+    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/caching_sha2_password.dll" -o "$MDCC_OUT/$1/caching_sha2_password.dll"
     if test ! -f "$MDCC_OUT/LICENSE"; then
         cp "$MDCC_SOURCE/COPYING.LIB" "$MDCC_OUT/LICENSE"
     fi

@@ -1,0 +1,22 @@
+From 5b3472496fe123a74a18001edc329bd368eacec1 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Wed, 21 Nov 2018 15:15:18 +0100
+Subject: [PATCH] Fix type of pcbResult param of BCryptEncrypt
+
+---
+ plugins/auth/caching_sha2_pw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plugins/auth/caching_sha2_pw.c b/plugins/auth/caching_sha2_pw.c
+index a76ca8e1..21515a27 100644
+--- a/plugins/auth/caching_sha2_pw.c
++++ b/plugins/auth/caching_sha2_pw.c
+@@ -240,7 +240,7 @@ static int auth_caching_sha2_client(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
+ #if !defined(HAVE_GNUTLS)
+   char passwd[MAX_PW_LEN];
+   unsigned char rsa_enc_pw[MAX_PW_LEN];
+-  unsigned int rsa_size;
++  ULONG rsa_size;
+   unsigned int pwlen, i;
+   char *filebuffer= NULL;
+ #endif

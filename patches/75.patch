@@ -1,19 +1,20 @@
+From e58c13128295411e6f15ebe3e3d1746ebf37840c Mon Sep 17 00:00:00 2001
 From: Michele Locati <michele@locati.it>
-Date: Tue, 20 Nov 2018 15:34:44 +0100
-Subject: [PATCH] Define undefined defines in sspi_errmsg.c
+Date: Wed, 21 Nov 2018 14:38:53 +0100
+Subject: [PATCH] Define missing potentially defines in sspi_errmsg.c
 
 ---
- plugins/auth/sspi_errmsg.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ plugins/auth/sspi_errmsg.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/plugins/auth/sspi_errmsg.c b/plugins/auth/sspi_errmsg.c
+index 558bedcb..336091ca 100644
 --- a/plugins/auth/sspi_errmsg.c
 +++ b/plugins/auth/sspi_errmsg.c
-@@ -30,6 +30,31 @@ POSSIBILITY OF SUCH DAMAGE.
+@@ -29,6 +29,30 @@ POSSIBILITY OF SUCH DAMAGE.
+ #include <windows.h>
  #include <stdio.h>
  
- #define ERRSYM(x) {x, #x}
-+
 +#ifndef SEC_E_INVALID_PARAMETER
 +#define SEC_E_INVALID_PARAMETER _HRESULT_TYPEDEF_(0x8009035D)
 +#endif
@@ -38,8 +39,6 @@ diff --git a/plugins/auth/sspi_errmsg.c b/plugins/auth/sspi_errmsg.c
 +#define SEC_E_MUTUAL_AUTH_FAILED _HRESULT_TYPEDEF_(0x80090363)
 +#endif
 +
+ #define ERRSYM(x) {x, #x}
  static struct {
    int error;
-   const char *sym;
--- 
-2.19.1.windows.1

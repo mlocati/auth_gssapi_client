@@ -1,0 +1,23 @@
+From 02795565328919bbd1adf1fdac01b006fde31fa4 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Wed, 21 Nov 2018 15:27:10 +0100
+Subject: [PATCH] Consistent type result of ternary operator in
+ auth_caching_sha2_client
+
+---
+ plugins/auth/caching_sha2_pw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plugins/auth/caching_sha2_pw.c b/plugins/auth/caching_sha2_pw.c
+index a76ca8e1..9cd10627 100644
+--- a/plugins/auth/caching_sha2_pw.c
++++ b/plugins/auth/caching_sha2_pw.c
+@@ -348,7 +348,7 @@ static int auth_caching_sha2_client(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
+     der_buffer_len= packet_length;
+     /* Load pem and convert it to binary object. New length will be returned
+        in der_buffer_len */
+-    if (!(der_buffer= ma_load_pem(filebuffer ? filebuffer : packet, &der_buffer_len)))
++    if (!(der_buffer= ma_load_pem(filebuffer ? filebuffer : (char *)packet, &der_buffer_len)))
+       goto error;
+ 
+     /* Create context and load public key */

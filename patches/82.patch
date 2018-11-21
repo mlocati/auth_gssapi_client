@@ -1,0 +1,22 @@
+From 9beea84bbb0f14bb70c22d60e899479bdffba613 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Wed, 21 Nov 2018 15:18:22 +0100
+Subject: [PATCH] Fix type of pbInput param of BCryptEncrypt
+
+---
+ plugins/auth/caching_sha2_pw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plugins/auth/caching_sha2_pw.c b/plugins/auth/caching_sha2_pw.c
+index a76ca8e1..9f544355 100644
+--- a/plugins/auth/caching_sha2_pw.c
++++ b/plugins/auth/caching_sha2_pw.c
+@@ -385,7 +385,7 @@ static int auth_caching_sha2_client(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
+ #elif defined(HAVE_SCHANNEL)
+ 	ZeroMemory(&paddingInfo, sizeof(paddingInfo));
+ 	paddingInfo.pszAlgId = BCRYPT_SHA1_ALGORITHM;
+-    if ((rc= BCryptEncrypt(pubkey, passwd, pwlen, &paddingInfo, NULL, 0, rsa_enc_pw,
++    if ((rc= BCryptEncrypt(pubkey, (PUCHAR)passwd, pwlen, &paddingInfo, NULL, 0, rsa_enc_pw,
+                      MAX_PW_LEN, &rsa_size, BCRYPT_PAD_OAEP)))
+       goto error;
+ 

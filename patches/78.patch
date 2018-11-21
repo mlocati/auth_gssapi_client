@@ -1,0 +1,23 @@
+From 53e0e42bdfda9dc6b0ca206c4f09660a76efcb50 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Wed, 21 Nov 2018 15:01:33 +0100
+Subject: [PATCH] Add -Wno-unknown-pragmas to GCC flags
+
+gcc doesn't recognize #pragma comment
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b812ab50..b38babfc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -136,7 +136,7 @@ SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DDBUG_OFF
+ 
+ IF(CMAKE_COMPILER_IS_GNUCC)
+   INCLUDE(CheckCCompilerFlag)
+-  SET(GCC_FLAGS -Wunused -Werror -Wlogical-op -Wno-uninitialized  -Wall -Wextra -Wformat-security -Wno-init-self -Wwrite-strings -Wshift-count-overflow -Wdeclaration-after-statement -fno-builtin -Wno-undef)
++  SET(GCC_FLAGS -Wunused -Werror -Wlogical-op -Wno-uninitialized  -Wall -Wextra -Wformat-security -Wno-init-self -Wwrite-strings -Wshift-count-overflow -Wdeclaration-after-statement -fno-builtin -Wno-undef -Wno-unknown-pragmas)
+   FOREACH(GCC_FLAG ${GCC_FLAGS})
+     string(REPLACE "-" "" FLAG_NO_HYPHEN ${GCC_FLAG})
+     CHECK_C_COMPILER_FLAG("${GCC_FLAG}" OK_${FLAG_NO_HYPHEN})

@@ -1,0 +1,64 @@
+From 63c799e470eccfb659b54690790b8a0d818d8b13 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Wed, 21 Nov 2018 14:28:43 +0100
+Subject: [PATCH] Use lower case in included files
+
+---
+ include/ma_global.h             | 2 +-
+ libmariadb/secure/ma_schannel.h | 2 +-
+ plugins/auth/sspi_client.c      | 2 +-
+ plugins/auth/sspi_common.h      | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/ma_global.h b/include/ma_global.h
+index 819a8273..c0239c4f 100644
+--- a/include/ma_global.h
++++ b/include/ma_global.h
+@@ -23,7 +23,7 @@
+ 
+ #ifdef _WIN32
+ #include <winsock2.h>
+-#include <Windows.h>
++#include <windows.h>
+ #include <stdlib.h>
+ #define strcasecmp _stricmp
+ #define sleep(x) Sleep(1000*(x))
+diff --git a/libmariadb/secure/ma_schannel.h b/libmariadb/secure/ma_schannel.h
+index 6533442d..6471d8f7 100644
+--- a/libmariadb/secure/ma_schannel.h
++++ b/libmariadb/secure/ma_schannel.h
+@@ -38,7 +38,7 @@
+ 
+ #include <schnlsp.h>
+ #undef SECURITY_WIN32
+-#include <Windows.h>
++#include <windows.h>
+ #include <sspi.h>
+ 
+ #define SC_IO_BUFFER_SIZE 0x4000
+diff --git a/plugins/auth/sspi_client.c b/plugins/auth/sspi_client.c
+index 75f5a1f5..2232022c 100644
+--- a/plugins/auth/sspi_client.c
++++ b/plugins/auth/sspi_client.c
+@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
+ #define SECURITY_WIN32
+ #include <windows.h>
+ #include <sspi.h>
+-#include <SecExt.h>
++#include <secext.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/plugins/auth/sspi_common.h b/plugins/auth/sspi_common.h
+index 34b8a56a..ea4644e6 100644
+--- a/plugins/auth/sspi_common.h
++++ b/plugins/auth/sspi_common.h
+@@ -29,7 +29,7 @@ POSSIBILITY OF SUCH DAMAGE.
+ #define SECURITY_WIN32
+ #include <windows.h>
+ #include <sspi.h>
+-#include <SecExt.h>
++#include <secext.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ 
