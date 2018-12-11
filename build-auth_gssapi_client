@@ -73,6 +73,7 @@ fi
 
 # Arguments:
 #   $1: architecture (i686 or x86_64)
+#   $2: output directory name (x86 or x64)
 mccBuild() {
     printf "### Extracting source code\n"
     rm -rf "$MDCC_SOURCE"
@@ -88,23 +89,23 @@ mccBuild() {
             patch --strip=1 --input="$MDCC_PATCHFILE"
         done
     fi
-    printf "### Preparing for $1 build\n"
+    printf "### Preparing for $2 build\n"
     rm -rf "$MDCC_BUILD"
     mkdir -p "$MDCC_BUILD"
     cd "$MDCC_BUILD"
     $1-w64-mingw32.static-cmake -DCMAKE_TOOLCHAIN_FILE="$MDCC_MXE/usr/$1-w64-mingw32.static/share/cmake/mxe-conf.cmake" "$MDCC_SOURCE"
-    printf "### Building for $1\n"
+    printf "### Building for $2\n"
     make auth_gssapi_client
     make caching_sha2_password
-    printf "### Preparing generated binaries $1\n"
-    mkdir -p "$MDCC_OUT/$1"
-    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$1/auth_gssapi_client.dll"
-    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/caching_sha2_password.dll" -o "$MDCC_OUT/$1/caching_sha2_password.dll"
+    printf "### Preparing generated binaries $2\n"
+    mkdir -p "$MDCC_OUT/$2"
+    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$2/auth_gssapi_client.dll"
+    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/caching_sha2_password.dll" -o "$MDCC_OUT/$2/caching_sha2_password.dll"
     if test ! -f "$MDCC_OUT/LICENSE"; then
         cp "$MDCC_SOURCE/COPYING.LIB" "$MDCC_OUT/LICENSE"
     fi
     rm -rf "$MDCC_SOURCE"
     rm -rf "$MDCC_BUILD"
 }
-mccBuild 'i686'
-mccBuild 'x86_64'
+mccBuild 'i686' 'x86'
+mccBuild 'x86_64' 'x64'
