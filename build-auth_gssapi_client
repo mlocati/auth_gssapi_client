@@ -5,7 +5,7 @@ set -o nounset
 
 unset `env | grep -vi '^EDITOR=\|^HOME=\|^LANG=\|MXE\|^PATH=' | grep -vi 'PKG_CONFIG\|PROXY\|^PS1=\|^TERM=' | cut -d '=' -f1 | tr '\n' ' '`
 
-#MARIADB_CONNECTOR_C_VERSION='3.0.7'
+#MARIADB_CONNECTOR_C_VERSION='v3.0.7'
 MARIADB_CONNECTOR_C_VERSION='master'
 
 MDCC_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -68,15 +68,7 @@ fi
 
 if test ! -f "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz"; then
     printf "### Downloading source code\n"
-    case "$MARIADB_CONNECTOR_C_VERSION" in
-        'master')
-            MDCC_SOURCE_URL='https://github.com/MariaDB/mariadb-connector-c/archive/master.tar.gz'
-            ;;
-        *)
-            MDCC_SOURCE_URL="https://github.com/MariaDB/mariadb-connector-c/archive/v${MARIADB_CONNECTOR_C_VERSION}.tar.gz"
-            ;;
-    esac
-    curl --location --output "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz" --retry 3 --silent --show-error "$MDCC_SOURCE_URL"
+    curl --location --output "$MDCC_DOWNLOADS/mariadb-connector-c-${MARIADB_CONNECTOR_C_VERSION}.tgz" --retry 3 --silent --show-error "https://github.com/MariaDB/mariadb-connector-c/archive/${MARIADB_CONNECTOR_C_VERSION}.tar.gz"
 fi
 
 # Arguments:
@@ -94,6 +86,7 @@ mccBuild() {
         printf "> %s\n" "$MDCC_PATCHFILE"
         patch --strip=1 --input="$MDCC_PATCHFILE"
     done
+    printf "### Preparing for $1 build\n"
     rm -rf "$MDCC_BUILD"
     mkdir -p "$MDCC_BUILD"
     cd "$MDCC_BUILD"
@@ -101,7 +94,7 @@ mccBuild() {
     printf "### Building for $1\n"
     make auth_gssapi_client
     make caching_sha2_password
-
+    printf "### Preparing generated binaries $1\n"
     mkdir -p "$MDCC_OUT/$1"
     $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$1/auth_gssapi_client.dll"
     $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/caching_sha2_password.dll" -o "$MDCC_OUT/$1/caching_sha2_password.dll"
