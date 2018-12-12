@@ -74,7 +74,24 @@ fi
 # Arguments:
 #   $1: architecture (i686 or x86_64)
 #   $2: output directory name (x86 or x64)
+#   $3: plugin 1
+#   ...
+#   $n: plugin N
 mccBuild() {
+    MDCC_B_ARC=$1
+    shift
+    case "$MDCC_B_ARC" in
+        i686)
+            MDCC_B_OUT=x86
+            ;;
+        x86_64)
+            MDCC_B_OUT=x64
+            ;;
+        *)
+            printf "UNKNOWN ARCHITECTURE: %s\n" "$MDCC_B_ARC"
+            return 1
+            ;;
+    esac
     printf "### Extracting source code\n"
     rm -rf "$MDCC_SOURCE"
     cd "$(dirname "$MDCC_SOURCE")"
@@ -89,23 +106,25 @@ mccBuild() {
             patch --strip=1 --input="$MDCC_PATCHFILE"
         done
     fi
-    printf "### Preparing for $2 build\n"
+    printf "### Preparing for %s build\n" "$MDCC_B_OUT"
     rm -rf "$MDCC_BUILD"
     mkdir -p "$MDCC_BUILD"
-    cd "$MDCC_BUILD"
-    $1-w64-mingw32.static-cmake -DCMAKE_TOOLCHAIN_FILE="$MDCC_MXE/usr/$1-w64-mingw32.static/share/cmake/mxe-conf.cmake" "$MDCC_SOURCE"
-    printf "### Building for $2\n"
-    make auth_gssapi_client
-    make caching_sha2_password
-    printf "### Preparing generated binaries $2\n"
-    mkdir -p "$MDCC_OUT/$2"
-    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/auth_gssapi_client.dll" -o "$MDCC_OUT/$2/auth_gssapi_client.dll"
-    $1-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/caching_sha2_password.dll" -o "$MDCC_OUT/$2/caching_sha2_password.dll"
+    mkdir -p "$MDCC_OUT/$MDCC_B_OUT"
     if test ! -f "$MDCC_OUT/LICENSE"; then
         cp "$MDCC_SOURCE/COPYING.LIB" "$MDCC_OUT/LICENSE"
     fi
+    cd "$MDCC_BUILD"
+    $MDCC_B_ARC-w64-mingw32.static-cmake -DCMAKE_TOOLCHAIN_FILE="$MDCC_MXE/usr/$MDCC_B_ARC-w64-mingw32.static/share/cmake/mxe-conf.cmake" "$MDCC_SOURCE"
+    while test $# -gt 0; do
+        MDCC_B_PLUGIN=$1
+        shift
+        printf "### Building plugin %s\n" "$MDCC_B_PLUGIN"
+        make "$MDCC_B_PLUGIN"
+        printf "### Stripping and copying plugin %s\n" "$MDCC_B_PLUGIN"
+        $MDCC_B_ARC-w64-mingw32.static-strip --strip-unneeded "$MDCC_BUILD/$MDCC_B_PLUGIN.dll" -o "$MDCC_OUT/$MDCC_B_OUT/$MDCC_B_PLUGIN.dll"
+    done
     rm -rf "$MDCC_SOURCE"
     rm -rf "$MDCC_BUILD"
 }
-mccBuild 'i686' 'x86'
-mccBuild 'x86_64' 'x64'
+mccBuild i686 auth_gssapi_client caching_sha2_password
+mccBuild x86_64 auth_gssapi_client caching_sha2_password
